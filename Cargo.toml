@@ -5,6 +5,7 @@ authors = ["lsaether <lsaether@protonmail.com>"]
 description = "A library wrapper around the Shapeshift API written in Rust."
 
 [dependencies]
+clap = "2.25.0"
 reqwest = "0.6.2"
 serde = "1.0.8"
 serde_derive = "1.0.8"
