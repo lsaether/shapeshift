@@ -10,7 +10,36 @@ pub struct txResponse {
 	withdrawalType: String,	
 }
 
-pub fn shift(withdrawAddr: &str, pair: &str, returnAddr: &str) -> String {
+pub fn shift(withdrawAddr: &str, pair: &str) -> String {
+	use std::io::Read;
+	use std::collections::HashMap;
+
+	let uri = format!("{}/shift", super::SHAPESHIFT_URL);
+
+	let mut post_request = HashMap::new();
+	post_request.insert("withdrawal", &withdrawAddr);
+	post_request.insert("pair", &pair);
+
+	let client = reqwest::Client::new().unwrap();
+	let mut resp = client.post(&uri).json(&post_request).send().unwrap();
+	assert!(resp.status().is_success());
+
+	let mut content = String::new();
+	resp.read_to_string(&mut content);
+
+	let tx: txResponse = serde_json::from_str(&content).unwrap();
+	let finish = format!("\nSend your {} to Shapeshift address {}\n
+Shapeshift will send {} to address {}\n
+Type `shapeshift-rs status {}` to check status of your transaction",
+		tx.depositType,
+		tx.deposit,
+		tx.withdrawalType,
+		tx.withdrawal,
+		tx.deposit);
+	finish
+}
+
+pub fn shift_with_return_addr(withdrawAddr: &str, pair: &str, returnAddr: &str) -> String {
 	use std::io::Read;
 	use std::collections::HashMap;
 
@@ -29,13 +58,17 @@ pub fn shift(withdrawAddr: &str, pair: &str, returnAddr: &str) -> String {
 	resp.read_to_string(&mut content);
 
 	let tx: txResponse = serde_json::from_str(&content).unwrap();
-	let finish = format!("Please send your {} to address {} to withdraw {} to address {}.",
+	let finish = format!("\nSend your {} to Shapeshift address {}\n
+Shapeshift will send {} to address {}\n
+Type `shapeshift-rs status {}` to check status of your transaction",
 		tx.depositType,
 		tx.deposit,
 		tx.withdrawalType,
-		tx.withdrawal);
+		tx.withdrawal,
+		tx.deposit);
 	finish
 }
+
 
 #[derive(Serialize, Deserialize)]
 pub struct emailResponse {
@@ -90,6 +123,47 @@ pub struct FixedTxSuccess {
 
 pub fn shift_fixed_amount(amount: &str, 
 						  withdrawAddr: &str,
+						  pair: &str) -> String {
+	use std::io::Read;
+	use std::collections::HashMap;
+
+	let uri = format!("{}/sendamount", super::SHAPESHIFT_URL);
+
+	let mut post_request = HashMap::new();
+	post_request.insert("amount", &amount);
+	post_request.insert("withdrawal", &withdrawAddr);
+	post_request.insert("pair", &pair);
+
+	let client = reqwest::Client::new().unwrap();
+	let mut resp = client.post(&uri).json(&post_request).send().unwrap();
+	assert!(resp.status().is_success());
+
+	let mut content = String::new();
+	resp.read_to_string(&mut content);
+
+	// println!("{}", &content);
+	let fTx: FixedTxSuccess = serde_json::from_str(&content).unwrap();
+	let f = fTx.success;
+	// TODO: convert the linux epoch f32 returned by shapeshift
+	// into a time stamp for readability.
+	let finish = format!("\nSend {} {} to Shapeshift address {}\n
+Shapeshift will send {} {} to address {}\n
+Quoted price: {}\n
+Type `shapeshift-rs status {}` to check status of your transaction",
+		f.depositAmount,
+		&f.pair[0..3],
+		f.deposit,
+		// f.expiration,
+		f.withdrawalAmount,
+		&f.pair[4..7],
+		f.withdrawal,
+		f.quotedRate,
+		f.deposit);
+	finish
+}
+
+pub fn shift_fixed_amount_with_return_addr(amount: &str, 
+						  withdrawAddr: &str,
 						  pair: &str,
 						  returnAddr: &str) -> String {
 	use std::io::Read;
@@ -110,20 +184,24 @@ pub fn shift_fixed_amount(amount: &str,
 	let mut content = String::new();
 	resp.read_to_string(&mut content);
 
-	println!("{}", &content);
+	// println!("{}", &content);
 	let fTx: FixedTxSuccess = serde_json::from_str(&content).unwrap();
 	let f = fTx.success;
 	// TODO: convert the linux epoch f32 returned by shapeshift
 	// into a time stamp for readability.
-	let finish = format!("Please send {} amount of {} to address {} before {}. You will receive {} amount of {} in address {}.\nQuoted price: {}",
+	let finish = format!("\nSend {} {} to Shapeshift address {}\n
+Shapeshift will send {} {} to address {}\n
+Quoted price: {}\n
+Type `shapeshift-rs status {}` to check status of your transaction",
 		f.depositAmount,
 		&f.pair[0..3],
 		f.deposit,
-		f.expiration,
+		// f.expiration,
 		f.withdrawalAmount,
 		&f.pair[4..7],
 		f.withdrawal,
-		f.quotedRate);
+		f.quotedRate,
+		f.deposit);
 	finish
 }
 
@@ -233,15 +311,15 @@ pub fn get_tx_status(address: &str) -> String {
 
 	if content.contains("no_deposits") || content.contains("received") {
 		let s: StatusResponse = serde_json::from_str(&content).unwrap();
-		let finish = format!("Got status {} on transaction to address {}.", s.status, s.address);
+		let finish = format!("\nGot status {} on transaction to address {}.", s.status, s.address);
 		return finish
 	} else if content.contains("error") {
 		let s: StatusResponseError = serde_json::from_str(&content).unwrap();
-		let finish = format!("Error on address {}!! {}", s.address, s.error);
+		let finish = format!("\nError on address {}!! {}", s.address, s.error);
 		return finish
 	} else if content.contains("complete") {
 		let s: StatusResponseComplete = serde_json::from_str(&content).unwrap();
-		let finish = format!("Got status {} on transaction to address {}. You sent {} of {}. You got back {} of {} to address {}. Your transaction ID is {}.",
+		let finish = format!("\nGot status {} on transaction to address {}. You sent {} of {}. You got back {} of {} to address {}. Your transaction ID is {}.",
 			s.status,
 			s.address,
 			s.incomingCoin,

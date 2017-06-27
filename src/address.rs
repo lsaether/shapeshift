@@ -36,7 +36,7 @@ pub fn validate_address(address: &str, coin: &str) -> String {
 	}
 }
 
-// Returns booleans instead of string responses. Could be useful
+// Returns booleans instead of string response. Could be useful
 // for building other libraries. `use shapeshift::address::validate_addr(..)`
 pub fn validate_addr(address: &str, coin: &str) -> bool {
 	use std::io::Read;
