@@ -311,11 +311,11 @@ pub fn get_tx_status(address: &str) -> String {
 
 	if content.contains("no_deposits") || content.contains("received") {
 		let s: StatusResponse = serde_json::from_str(&content).unwrap();
-		let finish = format!("\nGot status {} on transaction to address {}.", s.status, s.address);
+		let finish = format!("\nGot status {} on transaction to address {}", s.status, s.address);
 		return finish
 	} else if content.contains("error") {
 		let s: StatusResponseError = serde_json::from_str(&content).unwrap();
-		let finish = format!("\nError on address {}!! {}", s.address, s.error);
+		let finish = format!("\nError on address {} !!! {}", s.address, s.error);
 		return finish
 	} else if content.contains("complete") {
 		let s: StatusResponseComplete = serde_json::from_str(&content).unwrap();

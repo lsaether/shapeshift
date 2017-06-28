@@ -60,7 +60,7 @@ pub fn get_market_info_for_pair(pair: &str) -> String {
 	resp.read_to_string(&mut content);
 
 	let m: MarketInfo = serde_json::from_str(&content).unwrap();
-	let finish = format!("Shapeshift market info for {}:\nRate: {}\nLimit: {}\nMinimum: {}\nMiner Fee: {}",
+	let finish = format!("\nShapeshift market info for {}:\nRate: {}\nLimit: {}\nMinimum: {}\nMiner Fee: {}",
 		m.pair,
 		m.rate,
 		m.limit,
