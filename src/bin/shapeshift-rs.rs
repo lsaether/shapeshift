@@ -81,7 +81,7 @@ fn main() {
   // shapeshift-rs market-info <pair>
   if let Some(ref matches) = matches.subcommand_matches("market-info") {
     let pair = matches.value_of("pair").unwrap();
-    let response = shapeshift::rates::get_market_info_for_pair(&pair);
+    let response = shapeshift::rates::MarketInfo::get_info(&pair);
     println!("{}", &response);
   }
 
@@ -94,7 +94,7 @@ fn main() {
 
     if matches.is_present("fixed") {
       fixed = true;
-      println!("Enter the amount of asset you would like to receive:");
+      println!("\nEnter the amount of asset you would like to receive:");
       amount = read_input();
     }
 

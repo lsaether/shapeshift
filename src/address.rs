@@ -3,12 +3,12 @@ extern crate serde;
 extern crate serde_json;
 
 #[derive(Serialize, Deserialize)]
-pub struct ValidIsTrue {
+struct ValidIsTrue {
 	isvalid: bool,
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct ValidIsFalse {
+struct ValidIsFalse {
 	isvalid: bool,
 	error: String,
 }
