@@ -117,7 +117,7 @@ fn main() {
           let response = shapeshift::transaction::shift_fixed_amount(&amount, &w_addr, &pair);
           println!("{}", &response);
         } else {
-          let response = shapeshift::transaction::shift(&w_addr, &pair);
+          let response = shapeshift::transaction::Tx::shift(&w_addr, &pair, "");
           println!("{}", &response);
         }
 
@@ -126,7 +126,7 @@ fn main() {
           let response = shapeshift::transaction::shift_fixed_amount_with_return_addr(&amount, &w_addr, &pair, &r_addr);
           println!("{}", response);
         } else {
-          let response = shapeshift::transaction::shift_with_return_addr(&w_addr, &pair, &r_addr);
+          let response = shapeshift::transaction::Tx::shift(&w_addr, &pair, &r_addr);
           println!("{}", &response);
         }
       }

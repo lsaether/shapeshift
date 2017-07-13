@@ -2,72 +2,93 @@ extern crate reqwest;
 extern crate serde;
 extern crate serde_json;
 
+use std::fmt;
+
 #[derive(Serialize, Deserialize)]
-pub struct txResponse {
+pub struct Tx {
 	deposit: String,
 	depositType: String,
 	withdrawal: String,
 	withdrawalType: String,	
 }
 
-pub fn shift(withdrawAddr: &str, pair: &str) -> String {
-	use std::io::Read;
-	use std::collections::HashMap;
-
-	let uri = format!("{}/shift", super::SHAPESHIFT_URL);
-
-	let mut post_request = HashMap::new();
-	post_request.insert("withdrawal", &withdrawAddr);
-	post_request.insert("pair", &pair);
-
-	let client = reqwest::Client::new().unwrap();
-	let mut resp = client.post(&uri).json(&post_request).send().unwrap();
-	assert!(resp.status().is_success());
-
-	let mut content = String::new();
-	resp.read_to_string(&mut content);
-
-	let tx: txResponse = serde_json::from_str(&content).unwrap();
-	let finish = format!("\nSend your {} to Shapeshift address {}\n
+impl fmt::Display for Tx {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "\nSend your {} to shapeshift address {}\n
 Shapeshift will send {} to address {}\n
-Type `shapeshift-rs status {}` to check status of your transaction",
-		tx.depositType,
-		tx.deposit,
-		tx.withdrawalType,
-		tx.withdrawal,
-		tx.deposit);
-	finish
+Type `shapeshift-rs status {}` to check status of transaction.",
+			self.depositType,
+			self.deposit,
+			self.withdrawalType,
+			self.withdrawal,
+			self.deposit)
+	}
 }
 
-pub fn shift_with_return_addr(withdrawAddr: &str, pair: &str, returnAddr: &str) -> String {
-	use std::io::Read;
-	use std::collections::HashMap;
+impl Tx {
+	pub fn shift(waddr: &str, pair: &str, raddr: &str) -> Tx {
+		use std::io::Read;
+		use std::collections::HashMap;
 
-	let uri = format!("{}/shift", super::SHAPESHIFT_URL);
+		let uri = format!("{}/shift",
+			super::SHAPESHIFT_URL);
 
-	let mut post_request = HashMap::new();
-	post_request.insert("withdrawal", &withdrawAddr);
-	post_request.insert("pair", &pair);
-	post_request.insert("returnAddress", &returnAddr);
+		let mut post = HashMap::new();
+		post.insert("withdrawal", &waddr);
+		post.insert("pair", &pair);
+		if raddr.is_empty() == false {
+			post.insert("returnAddress", &raddr);
+		}
 
-	let client = reqwest::Client::new().unwrap();
-	let mut resp = client.post(&uri).json(&post_request).send().unwrap();
-	assert!(resp.status().is_success());
+		// Some client magic to do a post request.
+		let client = reqwest::Client::new().unwrap();
+		let mut res = client.post(&uri)
+							.json(&post)
+							.send()
+							.unwrap();
+		// No failures getting through here.
+		assert!(res.status().is_success());
 
-	let mut content = String::new();
-	resp.read_to_string(&mut content);
+		// Make an empty string.
+		let mut content = String::new();
+		// Fill it with our data!
+		res.read_to_string(&mut content);
 
-	let tx: txResponse = serde_json::from_str(&content).unwrap();
-	let finish = format!("\nSend your {} to Shapeshift address {}\n
-Shapeshift will send {} to address {}\n
-Type `shapeshift-rs status {}` to check status of your transaction",
-		tx.depositType,
-		tx.deposit,
-		tx.withdrawalType,
-		tx.withdrawal,
-		tx.deposit);
-	finish
+		let t: Tx = serde_json::from_str(&content).unwrap();
+
+		t
+	}
 }
+
+// pub fn shift_with_return_addr(withdrawAddr: &str, pair: &str, returnAddr: &str) -> String {
+// 	use std::io::Read;
+// 	use std::collections::HashMap;
+
+// 	let uri = format!("{}/shift", super::SHAPESHIFT_URL);
+
+// 	let mut post_request = HashMap::new();
+// 	post_request.insert("withdrawal", &withdrawAddr);
+// 	post_request.insert("pair", &pair);
+// 	post_request.insert("returnAddress", &returnAddr);
+
+// 	let client = reqwest::Client::new().unwrap();
+// 	let mut resp = client.post(&uri).json(&post_request).send().unwrap();
+// 	assert!(resp.status().is_success());
+
+// 	let mut content = String::new();
+// 	resp.read_to_string(&mut content);
+
+// 	let tx: txResponse = serde_json::from_str(&content).unwrap();
+// 	let finish = format!("\nSend your {} to Shapeshift address {}\n
+// Shapeshift will send {} to address {}\n
+// Type `shapeshift-rs status {}` to check status of your transaction",
+// 		tx.depositType,
+// 		tx.deposit,
+// 		tx.withdrawalType,
+// 		tx.withdrawal,
+// 		tx.deposit);
+// 	finish
+// }
 
 
 #[derive(Serialize, Deserialize)]

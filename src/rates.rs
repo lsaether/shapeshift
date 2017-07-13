@@ -8,7 +8,6 @@ use std::fmt;
 // let r = shapeshift::rates::Rate::get_rate("btc_ltc")
 // println!("{}", r);
 
-
 #[derive(Serialize, Deserialize)]
 pub struct Rate {
     pair: String,
@@ -46,7 +45,6 @@ impl Rate {
 // Example usage 
 // let r = shapeshift::rates::MarketInfo::get_info("btc_ltc")
 // println!("{}", r);
-
 
 #[derive(Serialize, Deserialize)]
 pub struct MarketInfo {

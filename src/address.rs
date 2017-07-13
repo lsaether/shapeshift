@@ -2,17 +2,6 @@ extern crate reqwest;
 extern crate serde;
 extern crate serde_json;
 
-#[derive(Serialize, Deserialize)]
-struct ValidIsTrue {
-	isvalid: bool,
-}
-
-#[derive(Serialize, Deserialize)]
-struct ValidIsFalse {
-	isvalid: bool,
-	error: String,
-}
-
 pub fn validate_address(address: &str, coin: &str) -> String {
 	use std::io::Read;
 	let uri = format!("{}/validateAddress/{}/{}", super::SHAPESHIFT_URL, &address, &coin);
@@ -56,4 +45,16 @@ pub fn validate_addr(address: &str, coin: &str) -> bool {
 		println!("Something went wrong... Send an email to the author at Lsaether@protonmail.com");
 		return false
 	}
+}
+
+// Used internally, might be able to do this in a better way.
+#[derive(Serialize, Deserialize)]
+struct ValidIsTrue {
+	isvalid: bool,
+}
+
+#[derive(Serialize, Deserialize)]
+struct ValidIsFalse {
+	isvalid: bool,
+	error: String,
 }
