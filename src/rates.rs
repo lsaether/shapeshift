@@ -30,11 +30,11 @@ impl Rate {
 			super::SHAPESHIFT_URL,
 			pair);
 
-		let mut resp = reqwest::get(&uri).unwrap();
-		assert!(resp.status().is_success());
+		let mut res = reqwest::get(&uri).unwrap();
+		assert!(res.status().is_success());
 
 		let mut content = String::new();
-		resp.read_to_string(&mut content);
+		res.read_to_string(&mut content);
 
 		let r: Rate = serde_json::from_str(&content)
 									.unwrap();
@@ -79,10 +79,10 @@ impl MarketInfo {
 			super::SHAPESHIFT_URL,
 			pair);
 
-		let mut resp = reqwest::get(&uri).unwrap();
+		let mut res = reqwest::get(&uri).unwrap();
 
 		let mut content = String::new();
-		resp.read_to_string(&mut content);
+		res.read_to_string(&mut content);
 
 		let m: MarketInfo = serde_json::from_str(&content)
 											.unwrap();
