@@ -60,36 +60,93 @@ impl Tx {
 	}
 }
 
-// pub fn shift_with_return_addr(withdrawAddr: &str, pair: &str, returnAddr: &str) -> String {
-// 	use std::io::Read;
-// 	use std::collections::HashMap;
+// Unfortunately I see no other way to implement the fixed
+// transaction than doing the whole process over again, since
+// it takes another arg in the post request and returns
+// a json response with more data fields.
 
-// 	let uri = format!("{}/shift", super::SHAPESHIFT_URL);
+// {"success":{"orderId":"5dcb1d01-2861-4879-8751-2f757d053a02","pair":"btc_ltc","withdrawal":"LKJocimVE1xjES4364EFkfXKUs4xH1ZS3P","withdrawalAmount":"10","deposit":"1H6DgWw76KNAUni7bNxhNLpQRvnphuzKA8","depositAmount":"0.16199562","expiration":1498451266757,"quotedRate":"61.73623676","maxLimit":0.98873348,"returnAddress":"1Fu5HBe4FpkaF6cJM6M6cQLxjNv48n3Pwd","apiPubKey":"shapeshift","minerFee":"0.001"}}
 
-// 	let mut post_request = HashMap::new();
-// 	post_request.insert("withdrawal", &withdrawAddr);
-// 	post_request.insert("pair", &pair);
-// 	post_request.insert("returnAddress", &returnAddr);
 
-// 	let client = reqwest::Client::new().unwrap();
-// 	let mut resp = client.post(&uri).json(&post_request).send().unwrap();
-// 	assert!(resp.status().is_success());
+// Fixed Transaction
+#[derive(Serialize, Deserialize)]
+pub struct FxTx {
+	pair: String,
+	deposit: String,
+	depositAmount: String,
+	withdrawal: String,
+	withdrawalAmount: String,
+	expiration: f32,
+	quotedRate: String,
+}
 
-// 	let mut content = String::new();
-// 	resp.read_to_string(&mut content);
+// Internal struct needed for nested JSON
+#[derive(Serialize, Deserialize)]
+struct FxTxS {
+	success: FxTx,
+}
 
-// 	let tx: txResponse = serde_json::from_str(&content).unwrap();
-// 	let finish = format!("\nSend your {} to Shapeshift address {}\n
-// Shapeshift will send {} to address {}\n
-// Type `shapeshift-rs status {}` to check status of your transaction",
-// 		tx.depositType,
-// 		tx.deposit,
-// 		tx.withdrawalType,
-// 		tx.withdrawal,
-// 		tx.deposit);
-// 	finish
-// }
+impl fmt::Display for FxTx {
+	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+		write!(f, "\nSend {} {} to Shapeshift address {}\n
+Shapeshift will send {} {} to address {}\n
+Quoted price: {}\n
+Type `shapeshift-rs status {}` to check status of your transaction",
+			self.depositAmount,
+			&self.pair[0..3],
+			self.deposit,
+			self.withdrawalAmount,
+			&self.pair[4..7],
+			self.withdrawal,
+			self.quotedRate,
+			self.deposit)
+	}
+}
 
+impl FxTx {
+	pub fn shift(amt: &str, 
+				waddr: &str, 
+				pair: &str, 
+				raddr: &str) -> FxTx {
+
+		use std::io::Read;
+		use std::collections::HashMap;
+
+		let uri = format!("{}/sendamount",
+			super::SHAPESHIFT_URL);
+
+		let mut post = HashMap::new();
+		post.insert("amount", &amt);
+		post.insert("withdrawal", &waddr);
+		post.insert("pair", &pair);
+		if raddr.is_empty() == false {
+			post.insert("returnAddress", &raddr);
+		}
+
+		// Some client magic to do a post request.
+		let client = reqwest::Client::new().unwrap();
+		let mut res = client.post(&uri)
+							.json(&post)
+							.send()
+							.unwrap();
+		// No failures getting through here.
+		assert!(res.status().is_success());
+
+		// Make an empty string.
+		let mut content = String::new();
+		// Fill it with our data!
+		res.read_to_string(&mut content);
+
+		// A stupid step because API returns a nested JSON
+		// and I don't know how to work with nested JSON
+		// in Rust
+		let fxtxs: FxTxS = serde_json::from_str(&content).unwrap();
+		// Now unwrap it how we should!
+		let f: FxTx = fxtxs.success;
+		// And return it
+		f
+	}
+}
 
 #[derive(Serialize, Deserialize)]
 pub struct emailResponse {
@@ -121,108 +178,6 @@ pub fn request_email_receipt(email: &str, withdraw_txid: &str) -> String {
 
 	let e: emailResponse = serde_json::from_str(&content).unwrap();
 	let finish = format!("{}! {}.", e.email.status, e.email.message);
-	finish
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct FixedTx {
-	pair: String,
-	withdrawal: String,
-	withdrawalAmount: String,
-	deposit: String,
-	depositAmount: String,
-	expiration: f32,
-	quotedRate: String,
-}
-
-// {"success":{"orderId":"5dcb1d01-2861-4879-8751-2f757d053a02","pair":"btc_ltc","withdrawal":"LKJocimVE1xjES4364EFkfXKUs4xH1ZS3P","withdrawalAmount":"10","deposit":"1H6DgWw76KNAUni7bNxhNLpQRvnphuzKA8","depositAmount":"0.16199562","expiration":1498451266757,"quotedRate":"61.73623676","maxLimit":0.98873348,"returnAddress":"1Fu5HBe4FpkaF6cJM6M6cQLxjNv48n3Pwd","apiPubKey":"shapeshift","minerFee":"0.001"}}
-
-#[derive(Serialize, Deserialize)]
-pub struct FixedTxSuccess {
-	success: FixedTx,
-}
-
-pub fn shift_fixed_amount(amount: &str, 
-						  withdrawAddr: &str,
-						  pair: &str) -> String {
-	use std::io::Read;
-	use std::collections::HashMap;
-
-	let uri = format!("{}/sendamount", super::SHAPESHIFT_URL);
-
-	let mut post_request = HashMap::new();
-	post_request.insert("amount", &amount);
-	post_request.insert("withdrawal", &withdrawAddr);
-	post_request.insert("pair", &pair);
-
-	let client = reqwest::Client::new().unwrap();
-	let mut resp = client.post(&uri).json(&post_request).send().unwrap();
-	assert!(resp.status().is_success());
-
-	let mut content = String::new();
-	resp.read_to_string(&mut content);
-
-	// println!("{}", &content);
-	let fTx: FixedTxSuccess = serde_json::from_str(&content).unwrap();
-	let f = fTx.success;
-	// TODO: convert the linux epoch f32 returned by shapeshift
-	// into a time stamp for readability.
-	let finish = format!("\nSend {} {} to Shapeshift address {}\n
-Shapeshift will send {} {} to address {}\n
-Quoted price: {}\n
-Type `shapeshift-rs status {}` to check status of your transaction",
-		f.depositAmount,
-		&f.pair[0..3],
-		f.deposit,
-		// f.expiration,
-		f.withdrawalAmount,
-		&f.pair[4..7],
-		f.withdrawal,
-		f.quotedRate,
-		f.deposit);
-	finish
-}
-
-pub fn shift_fixed_amount_with_return_addr(amount: &str, 
-						  withdrawAddr: &str,
-						  pair: &str,
-						  returnAddr: &str) -> String {
-	use std::io::Read;
-	use std::collections::HashMap;
-
-	let uri = format!("{}/sendamount", super::SHAPESHIFT_URL);
-
-	let mut post_request = HashMap::new();
-	post_request.insert("amount", &amount);
-	post_request.insert("withdrawal", &withdrawAddr);
-	post_request.insert("pair", &pair);
-	post_request.insert("returnAddress", &returnAddr);
-
-	let client = reqwest::Client::new().unwrap();
-	let mut resp = client.post(&uri).json(&post_request).send().unwrap();
-	assert!(resp.status().is_success());
-
-	let mut content = String::new();
-	resp.read_to_string(&mut content);
-
-	// println!("{}", &content);
-	let fTx: FixedTxSuccess = serde_json::from_str(&content).unwrap();
-	let f = fTx.success;
-	// TODO: convert the linux epoch f32 returned by shapeshift
-	// into a time stamp for readability.
-	let finish = format!("\nSend {} {} to Shapeshift address {}\n
-Shapeshift will send {} {} to address {}\n
-Quoted price: {}\n
-Type `shapeshift-rs status {}` to check status of your transaction",
-		f.depositAmount,
-		&f.pair[0..3],
-		f.deposit,
-		// f.expiration,
-		f.withdrawalAmount,
-		&f.pair[4..7],
-		f.withdrawal,
-		f.quotedRate,
-		f.deposit);
 	finish
 }
 

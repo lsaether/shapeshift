@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate serde_derive;
 
-#[warn(!unused_must_use)]
+#[warn(unused_must_use)]
 
 pub mod address;
 pub mod rates;
