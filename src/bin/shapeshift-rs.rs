@@ -114,19 +114,27 @@ fn main() {
       if r_addr.is_empty() {
 
         if fixed {
-          let response = shapeshift::transaction::FxTx::shift(&amount, &w_addr, &pair, "");
+          let response = shapeshift::transaction
+                                   ::FxTx
+                                   ::shift(&amount, &w_addr, &pair, "");
           println!("{}", &response);
         } else {
-          let response = shapeshift::transaction::Tx::shift(&w_addr, &pair, "");
+          let response = shapeshift::transaction
+                                   ::Tx
+                                   ::shift(&w_addr, &pair, "");
           println!("{}", &response);
         }
 
       } else {
         if fixed {
-          let response = shapeshift::transaction::FxTx::shift(&amount, &w_addr, &pair, &r_addr);
+          let response = shapeshift::transaction
+                                   ::FxTx
+                                   ::shift(&amount, &w_addr, &pair, &r_addr);
           println!("{}", response);
         } else {
-          let response = shapeshift::transaction::Tx::shift(&w_addr, &pair, &r_addr);
+          let response = shapeshift::transaction
+                                   ::Tx
+                                   ::shift(&w_addr, &pair, &r_addr);
           println!("{}", &response);
         }
       }
