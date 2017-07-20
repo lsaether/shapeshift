@@ -36,7 +36,7 @@ impl Tx {
 		let mut post = HashMap::new();
 		post.insert("withdrawal", &waddr);
 		post.insert("pair", &pair);
-		if raddr.is_empty() == false {
+		if !raddr.is_empty(){
 			post.insert("returnAddress", &raddr);
 		}
 
@@ -119,7 +119,7 @@ impl FxTx {
 		post.insert("amount", &amt);
 		post.insert("withdrawal", &waddr);
 		post.insert("pair", &pair);
-		if raddr.is_empty() == false {
+		if !raddr.is_empty(){
 			post.insert("returnAddress", &raddr);
 		}
 
