@@ -1,7 +1,7 @@
 [package]
 name = "shapeshift"
 version = "0.1.0"
-authors = ["lsaether <lsaether@protonmail.com>"]
+authors = ["Logan Saether <Lsaether@protonmail.com>"]
 description = "A library wrapper around the Shapeshift API written in Rust."
 
 [dependencies]
