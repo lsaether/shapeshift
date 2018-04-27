@@ -148,7 +148,7 @@ fn main() {
   }
 
   // shapeshift-rs get-coins
-  if let Some(ref matches) = matches.subcommand_matches("get-coins") {
+  if let Some(ref _matches) = matches.subcommand_matches("get-coins") {
     println!("NOT YET AVAILABLE");
   }
 }

@@ -16,7 +16,7 @@ pub fn validate_address(address: &str, coin: &str) -> String {
 		let finish = format!("\nThis is not a valid address! Error message: {}", v.error);
 		return finish
 	} else if content.contains("true") {
-		let v: ValidIsTrue = serde_json::from_str(&content).unwrap();
+		let _v: ValidIsTrue = serde_json::from_str(&content).unwrap();
 		let finish = format!("\nThis is a valid address to withdraw funds");
 		return finish
 	} else {

@@ -7,9 +7,11 @@ use std::fmt;
 #[derive(Serialize, Deserialize)]
 pub struct Tx {
 	deposit: String,
-	depositType: String,
+	#[serde(rename = "depositType")]
+	deposit_type: String,
 	withdrawal: String,
-	withdrawalType: String,
+	#[serde(rename = "withdrawalType")]
+	withdrawal_type: String,
 }
 
 impl fmt::Display for Tx {
@@ -17,9 +19,9 @@ impl fmt::Display for Tx {
 		write!(f, "\nSend your {} to shapeshift address {}\n
 Shapeshift will send {} to address {}\n
 Type `shapeshift-rs status {}` to check status of transaction.",
-			self.depositType,
+			self.deposit_type,
 			self.deposit,
-			self.withdrawalType,
+			self.withdrawal_type,
 			self.withdrawal,
 			self.deposit)
 	}
@@ -73,11 +75,14 @@ impl Tx {
 pub struct FxTx {
 	pair: String,
 	deposit: String,
-	depositAmount: String,
+	#[serde(rename = "depositAmount")]
+	deposit_amount: String,
 	withdrawal: String,
-	withdrawalAmount: String,
+	#[serde(rename = "withdrawalAmount")]
+	withdrawal_amount: String,
 	expiration: f32,
-	quotedRate: String,
+	#[serde(rename = "quotedRate")]
+	quoted_rate: String,
 }
 
 // Internal struct needed for nested JSON
@@ -92,13 +97,13 @@ impl fmt::Display for FxTx {
 Shapeshift will send {} {} to address {}\n
 Quoted price: {}\n
 Type `shapeshift-rs status {}` to check status of your transaction",
-			self.depositAmount,
+			self.deposit_amount,
 			&self.pair[0..3],
 			self.deposit,
-			self.withdrawalAmount,
+			self.withdrawal_amount,
 			&self.pair[4..7],
 			self.withdrawal,
-			self.quotedRate,
+			self.quoted_rate,
 			self.deposit)
 	}
 }
@@ -149,7 +154,8 @@ impl FxTx {
 }
 
 #[derive(Serialize, Deserialize)]
-pub struct emailResponse {
+#[serde(rename = "emailResponse")]
+pub struct EmailResponse {
 	email: Email,
 }
 
@@ -176,7 +182,7 @@ pub fn request_email_receipt(email: &str, withdraw_txid: &str) -> String {
 	let mut content = String::new();
 	resp.read_to_string(&mut content).unwrap();
 
-	let e: emailResponse = serde_json::from_str(&content).unwrap();
+	let e: EmailResponse = serde_json::from_str(&content).unwrap();
 	let finish = format!("{}! {}.", e.email.status, e.email.message);
 	finish
 }
@@ -184,11 +190,15 @@ pub fn request_email_receipt(email: &str, withdraw_txid: &str) -> String {
 #[derive(Serialize, Deserialize)]
 pub struct PriceQuote {
 	pair: String,
-	withdrawalAmount: String,
-	depositAmount: String,
+	#[serde(rename = "withdrawalAmount")]
+	withdrawal_amount: String,
+	#[serde(rename = "depositAmount")]
+	deposit_amount: String,
 	expiration: f32,
-	quotedRate: String,
-	minerFee: String,
+	#[serde(rename = "quotedRate")]
+	quoted_rate: String,
+	#[serde(rename = "minerFee")]
+	miner_fee: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -217,11 +227,11 @@ pub fn get_price_quote(amount: &str, pair: &str) -> String {
 	let q = q.success;
 	let finish = format!("Pair: {}\nAmount you will receive: {}\nAmount to send: {}\nExpires: {}\nQuoted Rate: {}\nMiner Fee: {}",
 		q.pair,
-		q.withdrawalAmount,
-		q.depositAmount,
+		q.withdrawal_amount,
+		q.deposit_amount,
 		q.expiration,
-		q.quotedRate,
-		q.minerFee);
+		q.quoted_rate,
+		q.miner_fee);
 	finish
 }
 
@@ -256,10 +266,14 @@ pub struct StatusResponseComplete {
 	status: String,
 	address: String,
 	withdraw: String,
-	incomingCoin: String,
-	incomingType: String,
-	outgoingCoin: String,
-	outgoingType: String,
+	#[serde(rename = "incomingCoin")]
+	incoming_coin: String,
+	#[serde(rename = "incomingType")]
+	incoming_type: String,
+	#[serde(rename = "outgoingCoin")]
+	outgoing_coin: String,
+	#[serde(rename = "outgoingType")]
+	outgoing_type: String,
 	transaction: String,
 }
 
@@ -298,10 +312,10 @@ pub fn get_tx_status(address: &str) -> String {
 		let finish = format!("\nGot status {} on transaction to address {}. You sent {} of {}. You got back {} of {} to address {}. Your transaction ID is {}.",
 			s.status,
 			s.address,
-			s.incomingCoin,
-			s.incomingType,
-			s.outgoingCoin,
-			s.outgoingType,
+			s.incoming_coin,
+			s.incoming_type,
+			s.outgoing_coin,
+			s.outgoing_type,
 			s.withdraw,
 			s.transaction);
 		return finish

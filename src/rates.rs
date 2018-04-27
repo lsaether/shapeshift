@@ -50,7 +50,8 @@ impl Rate {
 pub struct MarketInfo {
 	pair: String,
 	rate: f32,
-	minerFee: f32,
+    #[serde(rename = "minerFee")]
+	miner_fee: f32,
 	limit: f32,
 	minimum: f32,
 	// TODO: maxLimit: f32,... What is this?
@@ -67,7 +68,7 @@ Miner Fee: {}",
 			self.rate,
 			self.limit,
 			self.minimum,
-			self.minerFee)
+			self.miner_fee)
 	}
 }
 
