@@ -15,31 +15,30 @@ pub struct Rate {
 }
 
 impl fmt::Display for Rate {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "\nShapeshift will shift {} at a rate of {}.",
-			self.pair,
-			self.rate)
-	}
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "\nShapeshift will shift {} at a rate of {}.",
+            self.pair, self.rate
+        )
+    }
 }
 
 impl Rate {
-	pub fn get_rate(pair: &str) -> Rate {
-		use std::io::Read;
+    pub fn get_rate(pair: &str) -> Rate {
+        use std::io::Read;
 
-		let uri = format!("{}/rate/{}",
-			super::SHAPESHIFT_URL,
-			pair);
+        let uri = format!("{}/rate/{}", super::SHAPESHIFT_URL, pair);
 
-		let mut res = reqwest::get(&uri).unwrap();
-		assert!(res.status().is_success());
+        let mut res = reqwest::get(&uri).unwrap();
+        assert!(res.status().is_success());
 
-		let mut content = String::new();
-		res.read_to_string(&mut content).unwrap();
+        let mut content = String::new();
+        res.read_to_string(&mut content).unwrap();
 
-		let r: Rate = serde_json::from_str(&content)
-									.unwrap();
-		r
-	}
+        let r: Rate = serde_json::from_str(&content).unwrap();
+        r
+    }
 }
 
 // Example usage
@@ -48,45 +47,41 @@ impl Rate {
 
 #[derive(Serialize, Deserialize)]
 pub struct MarketInfo {
-	pair: String,
-	rate: f32,
+    pair: String,
+    rate: f32,
     #[serde(rename = "minerFee")]
-	miner_fee: f32,
-	limit: f32,
-	minimum: f32,
-	// TODO: maxLimit: f32,... What is this?
+    miner_fee: f32,
+    limit: f32,
+    minimum: f32,
+    // TODO: maxLimit: f32,... What is this?
 }
 
 impl fmt::Display for MarketInfo {
-	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-		write!(f, "\nShapeshift market info for {}:\n
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "\nShapeshift market info for {}:\n
 Rate: {}\n
 Limit: {}\n
 Minimum: {}\n
 Miner Fee: {}",
-			self.pair,
-			self.rate,
-			self.limit,
-			self.minimum,
-			self.miner_fee)
-	}
+            self.pair, self.rate, self.limit, self.minimum, self.miner_fee
+        )
+    }
 }
 
 impl MarketInfo {
-	pub fn get_info(pair: &str) -> MarketInfo {
-		use std::io::Read;
+    pub fn get_info(pair: &str) -> MarketInfo {
+        use std::io::Read;
 
-		let uri = format!("{}/marketinfo/{}",
-			super::SHAPESHIFT_URL,
-			pair);
+        let uri = format!("{}/marketinfo/{}", super::SHAPESHIFT_URL, pair);
 
-		let mut res = reqwest::get(&uri).unwrap();
+        let mut res = reqwest::get(&uri).unwrap();
 
-		let mut content = String::new();
-		res.read_to_string(&mut content).unwrap();
+        let mut content = String::new();
+        res.read_to_string(&mut content).unwrap();
 
-		let m: MarketInfo = serde_json::from_str(&content)
-											.unwrap();
-		m
-	}
+        let m: MarketInfo = serde_json::from_str(&content).unwrap();
+        m
+    }
 }
