@@ -9,7 +9,7 @@ pub struct Tx {
 	deposit: String,
 	depositType: String,
 	withdrawal: String,
-	withdrawalType: String,	
+	withdrawalType: String,
 }
 
 impl fmt::Display for Tx {
@@ -41,7 +41,7 @@ impl Tx {
 		}
 
 		// Some client magic to do a post request.
-		let client = reqwest::Client::new().unwrap();
+		let client = reqwest::Client::new();
 		let mut res = client.post(&uri)
 							.json(&post)
 							.send()
@@ -52,7 +52,7 @@ impl Tx {
 		// Make an empty string.
 		let mut content = String::new();
 		// Fill it with our data!
-		res.read_to_string(&mut content);
+		res.read_to_string(&mut content).unwrap();
 
 		let t: Tx = serde_json::from_str(&content).unwrap();
 
@@ -104,9 +104,9 @@ Type `shapeshift-rs status {}` to check status of your transaction",
 }
 
 impl FxTx {
-	pub fn shift(amt: &str, 
-				waddr: &str, 
-				pair: &str, 
+	pub fn shift(amt: &str,
+				waddr: &str,
+				pair: &str,
 				raddr: &str) -> FxTx {
 
 		use std::io::Read;
@@ -124,7 +124,7 @@ impl FxTx {
 		}
 
 		// Some client magic to do a post request.
-		let client = reqwest::Client::new().unwrap();
+		let client = reqwest::Client::new();
 		let mut res = client.post(&uri)
 							.json(&post)
 							.send()
@@ -135,7 +135,7 @@ impl FxTx {
 		// Make an empty string.
 		let mut content = String::new();
 		// Fill it with our data!
-		res.read_to_string(&mut content);
+		res.read_to_string(&mut content).unwrap();
 
 		// A stupid step because API returns a nested JSON
 		// and I don't know how to work with nested JSON
@@ -169,12 +169,12 @@ pub fn request_email_receipt(email: &str, withdraw_txid: &str) -> String {
 	post_request.insert("email", &email);
 	post_request.insert("txid", &withdraw_txid);
 
-	let client = reqwest::Client::new().unwrap();
+	let client = reqwest::Client::new();
 	let mut resp = client.post(&uri).json(&post_request).send().unwrap();
 	assert!(resp.status().is_success());
 
 	let mut content = String::new();
-	resp.read_to_string(&mut content);
+	resp.read_to_string(&mut content).unwrap();
 
 	let e: emailResponse = serde_json::from_str(&content).unwrap();
 	let finish = format!("{}! {}.", e.email.status, e.email.message);
@@ -206,12 +206,12 @@ pub fn get_price_quote(amount: &str, pair: &str) -> String {
 	post_request.insert("amount", &amount);
 	post_request.insert("pair", &pair);
 
-	let client = reqwest::Client::new().unwrap();
+	let client = reqwest::Client::new();
 	let mut resp = client.post(&uri).json(&post_request).send().unwrap();
 	assert!(resp.status().is_success());
 
 	let mut content = String::new();
-	resp.read_to_string(&mut content);
+	resp.read_to_string(&mut content).unwrap();
 
 	let q: PriceQuoteSuccess = serde_json::from_str(&content).unwrap();
 	let q = q.success;
@@ -239,12 +239,12 @@ pub fn cancel_pending_tx(address: &str) -> String {
 	let mut post_request = HashMap::new();
 	post_request.insert("address", &address);
 
-	let client = reqwest::Client::new().unwrap();
+	let client = reqwest::Client::new();
 	let mut resp = client.post(&uri).json(&post_request).send().unwrap();
 	assert!(resp.status().is_success());
 
 	let mut content = String::new();
-	resp.read_to_string(&mut content);
+	resp.read_to_string(&mut content).unwrap();
 
 	let c: CancelResponse = serde_json::from_str(&content).unwrap();
 	let finish = format!("{}", c.success);
@@ -283,7 +283,7 @@ pub fn get_tx_status(address: &str) -> String {
 	assert!(resp.status().is_success());
 
 	let mut content = String::new();
-	resp.read_to_string(&mut content);
+	resp.read_to_string(&mut content).unwrap();
 
 	if content.contains("no_deposits") || content.contains("received") {
 		let s: StatusResponse = serde_json::from_str(&content).unwrap();
@@ -324,7 +324,7 @@ pub fn get_time_remaining(address: &str) -> String {
 	assert!(resp.status().is_success());
 
 	let mut content = String::new();
-	resp.read_to_string(&mut content);
+	resp.read_to_string(&mut content).unwrap();
 
 	let t: TimeRemaining = serde_json::from_str(&content).unwrap();
 	let finish = format!("Received status {} on fixed amount transaction to address {}. You have {} seconds to complete the deposit.",

@@ -9,12 +9,12 @@ pub fn validate_address(address: &str, coin: &str) -> String {
 	assert!(resp.status().is_success());
 
 	let mut content = String::new();
-	resp.read_to_string(&mut content);
+	resp.read_to_string(&mut content).unwrap();
 
 	if content.contains("false") {
 		let v: ValidIsFalse = serde_json::from_str(&content).unwrap();
 		let finish = format!("\nThis is not a valid address! Error message: {}", v.error);
-		return finish	
+		return finish
 	} else if content.contains("true") {
 		let v: ValidIsTrue = serde_json::from_str(&content).unwrap();
 		let finish = format!("\nThis is a valid address to withdraw funds");
@@ -34,11 +34,11 @@ pub fn validate_addr(address: &str, coin: &str) -> bool {
 	assert!(resp.status().is_success());
 
 	let mut content = String::new();
-	resp.read_to_string(&mut content);
+	resp.read_to_string(&mut content).unwrap();
 
 	if content.contains("false") {
 		println!("{}", &content);
-		return false	
+		return false
 	} else if content.contains("true") {
 		return true
 	} else {

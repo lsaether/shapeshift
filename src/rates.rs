@@ -4,7 +4,7 @@ extern crate serde_json;
 
 use std::fmt;
 
-// Example usage 
+// Example usage
 // let r = shapeshift::rates::Rate::get_rate("btc_ltc")
 // println!("{}", r);
 
@@ -34,7 +34,7 @@ impl Rate {
 		assert!(res.status().is_success());
 
 		let mut content = String::new();
-		res.read_to_string(&mut content);
+		res.read_to_string(&mut content).unwrap();
 
 		let r: Rate = serde_json::from_str(&content)
 									.unwrap();
@@ -42,7 +42,7 @@ impl Rate {
 	}
 }
 
-// Example usage 
+// Example usage
 // let r = shapeshift::rates::MarketInfo::get_info("btc_ltc")
 // println!("{}", r);
 
@@ -82,7 +82,7 @@ impl MarketInfo {
 		let mut res = reqwest::get(&uri).unwrap();
 
 		let mut content = String::new();
-		res.read_to_string(&mut content);
+		res.read_to_string(&mut content).unwrap();
 
 		let m: MarketInfo = serde_json::from_str(&content)
 											.unwrap();

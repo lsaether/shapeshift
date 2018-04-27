@@ -12,7 +12,7 @@ const VERSION:  &'static str = "0.1.0";
 const ABOUT:    &'static str = "Command line interface for the Shapeshift API.";
 
 fn main() {
-    /// Wraps the terminal so you can colorize the output.
+    // Wraps the terminal so you can colorize the output.
     let mut t = term::stdout().unwrap();
 
     t.fg(term::color::BRIGHT_GREEN).unwrap();
@@ -105,7 +105,7 @@ fn main() {
 
     if !matches.is_present("pair") {
       println!("\nEnter the pair you would like to shift in required format [from_to]:");
-      pair = read_input(); 
+      pair = read_input();
     } else { pair = String::from(matches.value_of("pair").unwrap()); }
 
     if !matches.is_present("return") {
@@ -154,10 +154,10 @@ fn main() {
 }
 
 fn read_input() -> String {
-  let mut input = String::new();
+    let mut input = String::new();
 
-  io::stdin().read_line(&mut input);
+    io::stdin().read_line(&mut input).unwrap();
 
-  let user_input = String::from(input.trim());
-  user_input
+    let user_input = String::from(input.trim());
+    user_input
 }
